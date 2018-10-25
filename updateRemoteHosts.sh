@@ -6,8 +6,8 @@
 # Usage:
 #    updateRemoteHosts.sh [hostsfile]
 # Params:
-#     hostfile                  A file containing ip addresses of remote hosts.
-#				default is ip_hosts.txt
+#     hostsfile                  A file containing ip address of remote hosts.
+#				 default is ip_hosts.txt
 # 2018 lanyufeng
 
 # Start of config variables
@@ -25,11 +25,13 @@ fi
 SERVICE=proxyd
 echo "***更新前后需要重启的服务是：$SERVICE"
 
-if [[ $# > 0 && -f "$1" ]]; then
-        HOSTSFILE=$1
-else
-        HOSTSFILE="ip_hosts.txt"
+HOSTSFILE=${1:-ip_hosts.txt}
+
+if ! test -f "$HOSTSFILE" ; then
+	echo "***Error: Hosts file not found: $HOSTSFILE"
+	exit 1
 fi
+
 echo "***远程主机ip地址列表：$HOSTSFILE"
 
 # End of config variables

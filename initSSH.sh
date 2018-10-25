@@ -5,7 +5,7 @@
 # Usage: 
 #     initSSH.sh [hostsfile] [on]
 # Params:
-#     hostfile			A file containing ip addresses of remote hosts.
+#     hostsfile			A file containing ip addresse/FQDN/hostname of remote hosts.
 #     on			Whether to keep ssh-agent running on.
 # 2018 lanyufeng
 
@@ -14,11 +14,11 @@ THIS_EXPAND=0
 [[ ! $- =~ 'x' ]] || ( set -x && THIS_EXPAND=1 )
 
 #初始化变量
+HOSTSFILE=${1:-ip_hosts.txt}
 
-if test -f "$1" ; then
-	HOSTSFILE=$1
-else
-	HOSTSFILE="ip_proxies.txt"
+if ! test -f "$HOSTSFILE" ; then
+	echo "***Error: Hosts file not found: $HOSTSFILE"
+	exit 1
 fi
 
 if ! which expect &>/dev/null; then
