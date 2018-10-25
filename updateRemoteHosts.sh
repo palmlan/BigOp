@@ -1,23 +1,19 @@
 #!/bin/bash
-# 远程执行ATS Proxy的版本更新操作，无补丁，无更新包，只更新部分文件
+# 远程执行版本更新操作，不支持打补丁，通过ssh复制、更新部分现网文件，如果
+# 新文件是tar文件，则会提示是否在目标文件夹中解开tar。更新前会提示用户是否
+# 备份源文件到一个tar文件中。
+
 # Usage:
-#    updateProxy.sh [hostsfile]
+#    updateRemoteHosts.sh [hostsfile]
 # Params:
 #     hostfile                  A file containing ip addresses of remote hosts.
+#				default is ip_hosts.txt
 # 2018 lanyufeng
 
+# Start of config variables
 # 初始化变量
 set -x; set -u
-SERVICE=proxyd
-
-if [[ $# > 0 && -f "$1" ]]; then
-        HOSTSFILE=$1
-else
-        HOSTSFILE="ip_proxies.txt"
-fi
-echo "***远程主机ip地址列表：$HOSTSFILE"
-
-UpdateFrom=(./sbin/proxy.jar ./tools/minicap/shared/android-28)
+UpdateFrom=(../../UpdateProxy/sbin/proxy.jar ../../UpdateProxy/tools/minicap/shared/android-28)
 echo "***源文件或文件夹包括 ${UpdateFrom[*]}"
 UpdateTo=(/opt/aspire/product/iproxy/proxy/sbin /opt/aspire/product/iproxy/proxy/tools/minicap/shared/)
 echo "***目标文件夹包括 ${UpdateTo[*]}"
@@ -25,6 +21,21 @@ if [[ ${#UpdateFrom[*]} -ne ${#UpdateTo[*]} ]]; then
 	echo "***ERR: 请重新检查，源文件或文件夹必须指定对应的目标文件夹!"
 	exit 1
 fi 
+
+SERVICE=proxyd
+echo "***更新前后需要重启的服务是：$SERVICE"
+
+if [[ $# > 0 && -f "$1" ]]; then
+        HOSTSFILE=$1
+else
+        HOSTSFILE="ip_hosts.txt"
+fi
+echo "***远程主机ip地址列表：$HOSTSFILE"
+
+# End of config variables
+
+UNTAR_CMD="tar -xv --no-overwrite-dir -f"
+TAR_CMD="tar -uvPf"
 
 do_backup () {
 	test -n "$1" || return 1
@@ -36,12 +47,12 @@ do_backup () {
 	done
 	bakfilename=${bakfilename:-rootdir}_$(date +%F).tar
 
-	echo "***Backup files in 目标文件夹 for all remote hosts into $bakfilename"
+	echo "***Backup files in 目标文件夹 $1 for all remote hosts into $bakfilename"
 	echo "***WARNING: ANY FILE WITH THE SAME NAME WILL BE REPLACED!"
 	read -n 1 -p "Choose (y)Continue backup; (S)Skip backup and begin update: (Any other key will quit immediately.)" ANSWER
 	case  "$ANSWER" in
 		'S')	return 0 ;;
-		'y')	pssh -ih $HOSTSFILE tar -uvPf $bakfilename $1 ;;
+		'y')	pssh -ih $HOSTSFILE $TAR_CMD $bakfilename $1 ;;
 		*)	do_exit 0 ;;
 	esac
 }
@@ -78,7 +89,7 @@ do_update () {
 					continue
 					;;	
 				"y")	# the magic shell parameter expansion used here to trim preceding path names
-					pssh -ih $HOSTSFILE  tar -xv --no-overwrite-dir -f ${2}/$TARFILE  || do_exit $?
+					pssh -ih $HOSTSFILE $UNTAR_CMD ${2}/$TARFILE  || do_exit $?
 					;;
 				"n")
 					break
