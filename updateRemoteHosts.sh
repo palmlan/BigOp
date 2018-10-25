@@ -1,22 +1,15 @@
 #!/bin/bash
-# 远程执行ATS Proxy的版本更新操作，无补丁，无更新包，只更新部分文件
+# 远程执行版本更新操作，不支持打补丁，通过ssh复制、更新部分现网文件
 # Usage:
-#    updateProxy.sh [hostsfile]
+#    updateRemoteHosts.sh [hostsfile]
 # Params:
 #     hostfile                  A file containing ip addresses of remote hosts.
+#				default is ip_hosts.txt
 # 2018 lanyufeng
 
+# Start of config variables
 # 初始化变量
 set -x; set -u
-SERVICE=proxyd
-
-if [[ $# > 0 && -f "$1" ]]; then
-        HOSTSFILE=$1
-else
-        HOSTSFILE="ip_proxies.txt"
-fi
-echo "***远程主机ip地址列表：$HOSTSFILE"
-
 UpdateFrom=(./sbin/proxy.jar ./tools/minicap/shared/android-28)
 echo "***源文件或文件夹包括 ${UpdateFrom[*]}"
 UpdateTo=(/opt/aspire/product/iproxy/proxy/sbin /opt/aspire/product/iproxy/proxy/tools/minicap/shared/)
@@ -25,6 +18,18 @@ if [[ ${#UpdateFrom[*]} -ne ${#UpdateTo[*]} ]]; then
 	echo "***ERR: 请重新检查，源文件或文件夹必须指定对应的目标文件夹!"
 	exit 1
 fi 
+
+SERVICE=proxyd
+echo "***更新前后需要重启的服务是：$SERVICE"
+
+if [[ $# > 0 && -f "$1" ]]; then
+        HOSTSFILE=$1
+else
+        HOSTSFILE="ip_hosts.txt"
+fi
+echo "***远程主机ip地址列表：$HOSTSFILE"
+
+# End of config variables
 
 do_backup () {
 	test -n "$1" || return 1
