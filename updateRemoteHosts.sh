@@ -47,7 +47,7 @@ do_backup () {
 	done
 	bakfilename=${bakfilename:-rootdir}_$(date +%F).tar
 
-	echo "***Backup files in 目标文件夹 for all remote hosts into $bakfilename"
+	echo "***Backup files in 目标文件夹 $1 for all remote hosts into $bakfilename"
 	echo "***WARNING: ANY FILE WITH THE SAME NAME WILL BE REPLACED!"
 	read -n 1 -p "Choose (y)Continue backup; (S)Skip backup and begin update: (Any other key will quit immediately.)" ANSWER
 	case  "$ANSWER" in
