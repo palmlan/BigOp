@@ -1,12 +1,13 @@
 #!/bin/bash
 # 
-# 初始化SSH免密登录环境：启动ssh-agent，添加ssh钥匙，
-# 然后复制ssh公钥到一批远程主机上
+# 配置SSH密钥登录环境：启动ssh-agent，为用户添加可用的ssh钥匙，
+# 然后复制本账号的ssh公钥到一批远程主机上, 完。
 # Usage: 
-#     initSSH.sh [hostsfile] [on]
+#     initSSH.sh [hostsfile] [on] [password]
 # Params:
 #     hostsfile			A file containing ip addresse/FQDN/hostname of remote hosts.
 #     on			Whether to keep ssh-agent running on.
+#     password			remote login password
 # 2018 lanyufeng
 
 #verbose display
@@ -29,20 +30,24 @@ fi
 
 # main
 echo "***远程主机ip地址列表：$HOSTSFILE"
-echo "***请输入本账号远程登录密码（请确保远程主机的账号密码都一样）:"
-read -s LOGINPASSWD
+
+if test -z "$LOGINPASSWD"; then
+	echo "***为了建立SSH密钥登录，请输入本账号远程登录密码"
+	echo "***（请确保与远程主机的账号密码一样）:"
+	read -s LOGINPASSWD
+fi
 
 # TBD:test if ssh-add can connect to existing ssh agent?
 ssh-add -l &>/dev/null
 case $? in
 	2) # No, start a new ssh-agent
         	eval `ssh-agent -s` 
-		MY_AGENT_PID=$SSH_AGENT_PID
 	;& #continue next command
 	1)# yes, but no key has added
 		ssh-add
 	;;
 esac
+MY_AGENT_PID=$SSH_AGENT_PID
 
 ex='^\s*#' # regex for comments in $HOSTSFILE
 while read line; do
@@ -85,7 +90,7 @@ done < $HOSTSFILE
 
 # If this script was called with 2nd parameter set to "on", then keep agent running on
 # eg. source <this script> <param1> on
-# otherwise quit the agent instance launched by this script only, if there is any. 
+# otherwise quit the agent instance launched by this script, if there is one. 
 # (eg. Agent not launched by this script will still be kept as is)
 test "$2" = "on" || ( test -n "$MY_AGENT_PID" && ssh-agent -k )
 test "$THIS_EXPAND" = "1" && set +x

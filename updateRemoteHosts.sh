@@ -75,7 +75,9 @@ local RETVAL
 }	
 
 do_update () {
-	sudo sudo service $SERVICE stop || do_exit $?
+	set +x
+	pssh -h $HOSTSFILE "echo $LOGINPASSWD | sudo -S service $SERVICE stop" || do_exit $?
+	set -x
 
 	pscp -h $HOSTSFILE -o . -e . -r $1  $2
 
@@ -103,7 +105,9 @@ do_update () {
 		done
 	fi
 
-	sudo service $SERVICE start || do_exit $?
+	set +x
+	pssh -h $HOSTSFILE "echo $LOGINPASSWD | sudo -S service $SERVICE start" || do_exit $?
+	set -x
 }
 	
 # 初始化检查
@@ -126,9 +130,12 @@ ssh-add -l &>/dev/null
 if [[ "$?" = 2 ]]; then
         # No, start a new ssh-agent
         eval `ssh-agent -s` 
-	MY_AGENT_PID=$SSH_AGENT_PID 
 fi
+MY_AGENT_PID=$SSH_AGENT_PID 
 ssh-add
+
+echo "***请输入本账号密码，用于sudo验证、建立SSH密钥登录远程主机等目的"
+read -s LOGINPASSWD
 
 echo "***Setup key authentication with remote hosts."
 test -x ./initSSH.sh && source ./initSSH.sh $HOSTSFILE on
