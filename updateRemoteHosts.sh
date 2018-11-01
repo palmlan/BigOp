@@ -6,8 +6,10 @@
 # Usage:
 #    updateRemoteHosts.sh [hostsfile]
 # Params:
-#     hostfile                  A file containing ip addresses of remote hosts.
-#				default is ip_hosts.txt
+
+#     hostsfile                  A file containing ip address of remote hosts.
+#				 default is ip_hosts.txt
+
 # 2018 lanyufeng
 
 # Start of config variables
@@ -25,11 +27,13 @@ fi
 SERVICE=proxyd
 echo "***更新前后需要重启的服务是：$SERVICE"
 
-if [[ $# > 0 && -f "$1" ]]; then
-        HOSTSFILE=$1
-else
-        HOSTSFILE="ip_hosts.txt"
+HOSTSFILE=${1:-ip_hosts.txt}
+
+if ! test -f "$HOSTSFILE" ; then
+	echo "***Error: Hosts file not found: $HOSTSFILE"
+	exit 1
 fi
+
 echo "***远程主机ip地址列表：$HOSTSFILE"
 
 # End of config variables
@@ -73,7 +77,11 @@ local RETVAL
 }	
 
 do_update () {
-	sudo sudo service $SERVICE stop || do_exit $?
+
+	set +x
+	pssh -h $HOSTSFILE "echo $LOGINPASSWD | sudo -S service $SERVICE stop" || do_exit $?
+	set -x
+
 
 	pscp -h $HOSTSFILE -o . -e . -r $1  $2
 
@@ -101,7 +109,9 @@ do_update () {
 		done
 	fi
 
-	sudo service $SERVICE start || do_exit $?
+	set +x
+	pssh -h $HOSTSFILE "echo $LOGINPASSWD | sudo -S service $SERVICE start" || do_exit $?
+	set -x
 }
 	
 # 初始化检查
@@ -124,10 +134,13 @@ ssh-add -l &>/dev/null
 if [[ "$?" = 2 ]]; then
         # No, start a new ssh-agent
         eval `ssh-agent -s` 
-	MY_AGENT_PID=$SSH_AGENT_PID 
 fi
+MY_AGENT_PID=$SSH_AGENT_PID 
 ssh-add
 
+echo "***请输入本账号密码，用于sudo验证、建立SSH密钥登录远程主机等目的"
+echo "***CAUTION: Password will be stored in shell variable insecurely, Use at your own risk!"
+read -s LOGINPASSWD
 echo "***Setup key authentication with remote hosts."
 test -x ./initSSH.sh && source ./initSSH.sh $HOSTSFILE on
 
