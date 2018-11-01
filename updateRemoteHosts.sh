@@ -135,6 +135,7 @@ MY_AGENT_PID=$SSH_AGENT_PID
 ssh-add
 
 echo "***请输入本账号密码，用于sudo验证、建立SSH密钥登录远程主机等目的"
+echo "***CAUTION: Password will be stored in shell variable insecurely, Use at your own risk!"
 read -s LOGINPASSWD
 
 echo "***Setup key authentication with remote hosts."

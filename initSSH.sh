@@ -34,6 +34,7 @@ echo "***远程主机ip地址列表：$HOSTSFILE"
 if test -z "$LOGINPASSWD"; then
 	echo "***为了建立SSH密钥登录，请输入本账号远程登录密码"
 	echo "***（请确保与远程主机的账号密码一样）:"
+	echo "***CAUTION: Password will be stored in shell variable insecurely, Use at your own risk!"
 	read -s LOGINPASSWD
 fi
 
