@@ -6,8 +6,10 @@
 # Usage:
 #    updateRemoteHosts.sh [hostsfile]
 # Params:
+
 #     hostsfile                  A file containing ip address of remote hosts.
 #				 default is ip_hosts.txt
+
 # 2018 lanyufeng
 
 # Start of config variables
@@ -76,9 +78,11 @@ local RETVAL
 }	
 
 do_update () {
+
 	set +x
 	pssh -h $HOSTSFILE "echo $LOGINPASSWD | sudo -S service $SERVICE stop" || do_exit $?
 	set -x
+
 
 	pscp -h $HOSTSFILE -o . -e . -r $1  $2
 
@@ -138,7 +142,6 @@ ssh-add
 echo "***请输入本账号密码，用于sudo验证、建立SSH密钥登录远程主机等目的"
 echo "***CAUTION: Password will be stored in shell variable insecurely, Use at your own risk!"
 read -s LOGINPASSWD
-
 echo "***Setup key authentication with remote hosts."
 test -x ./initSSH.sh && source ./initSSH.sh $HOSTSFILE on
 
