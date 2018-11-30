@@ -47,7 +47,7 @@ do_backup () {
 	while [[ "$bakfilename" =~ $reg1 ]]; do
 		bakfilename=${bakfilename%/}
 	done
-	rootdir="/" # file system root dir is a platform specific var
+	rootdir="/" # file system root dir is a platform specific value
 	bakfilename=${bakfilename:-$rootdir}_$(date +%F).tar
 
 	echo "***Backup files in 目标文件夹 $1 for all remote hosts into $bakfilename"
