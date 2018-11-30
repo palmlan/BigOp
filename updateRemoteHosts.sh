@@ -15,9 +15,9 @@
 # Start of config variables
 # 初始化变量
 set -x; set -u
-UpdateFrom=(../../UpdateProxy/sbin/proxy.jar ../../UpdateProxy/tools/minicap/shared/android-28)
+UpdateFrom=(../../UpdateProxy/20181130/proxy.jar)
 echo "***源文件或文件夹包括 ${UpdateFrom[*]}"
-UpdateTo=(/opt/aspire/product/iproxy/proxy/sbin /opt/aspire/product/iproxy/proxy/tools/minicap/shared/)
+UpdateTo=(/opt/aspire/product/iproxy/proxy/sbin/proxy.jar)
 echo "***目标文件夹包括 ${UpdateTo[*]}"
 if [[ ${#UpdateFrom[*]} -ne ${#UpdateTo[*]} ]]; then
 	echo "***ERR: 请重新检查，源文件或文件夹必须指定对应的目标文件夹!"
@@ -49,7 +49,8 @@ do_backup () {
 	while [[ "$bakfilename" =~ $reg1 ]]; do
 		bakfilename=${bakfilename%/}
 	done
-	bakfilename=${bakfilename:-rootdir}_$(date +%F).tar
+	rootdir="/" # file system root dir is a platform specific value
+	bakfilename=${bakfilename:-$rootdir}_$(date +%F).tar
 
 	echo "***Backup files in 目标文件夹 $1 for all remote hosts into $bakfilename"
 	echo "***WARNING: ANY FILE WITH THE SAME NAME WILL BE REPLACED!"
