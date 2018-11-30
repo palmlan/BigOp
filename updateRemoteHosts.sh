@@ -13,9 +13,9 @@
 # Start of config variables
 # 初始化变量
 set -x; set -u
-UpdateFrom=(../../UpdateProxy/sbin/proxy.jar ../../UpdateProxy/tools/minicap/shared/android-28)
+UpdateFrom=(../../UpdateProxy/20181130/proxy.jar)
 echo "***源文件或文件夹包括 ${UpdateFrom[*]}"
-UpdateTo=(/opt/aspire/product/iproxy/proxy/sbin /opt/aspire/product/iproxy/proxy/tools/minicap/shared/)
+UpdateTo=(/opt/aspire/product/iproxy/proxy/sbin)
 echo "***目标文件夹包括 ${UpdateTo[*]}"
 if [[ ${#UpdateFrom[*]} -ne ${#UpdateTo[*]} ]]; then
 	echo "***ERR: 请重新检查，源文件或文件夹必须指定对应的目标文件夹!"
